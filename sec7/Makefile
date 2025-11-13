@@ -1,12 +1,15 @@
 CC = gcc
 FLAGS = -ggdb3 -Wall -Wextra -Wshadow -std=gnu11 -fsanitize=address -Wno-unused-parameter
 
+all: starter pipes
+
 pipes: pipes.c
 	$(CC) $(FLAGS) $^ -o $@ -lm
 
-all: pipes
+starter: pipes-starter.c
+	$(CC) $(FLAGS) $^ -o $@ -lm
 
 clean:
-	rm -f pipes
+	rm -f starter pipes
 
 .PHONY: all clean
