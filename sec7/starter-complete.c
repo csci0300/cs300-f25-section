@@ -15,13 +15,13 @@ int main() {
     if (pid == 0) { // Child
 	close(pfd[0]);
 	// As child process, how to send x via the pipe?
-	int x[2] = {42, 125}; 
+	int x[2] = {42, 125};
 
 	int b = write(pfd[1], &x, sizeof(int));
 	b = write(pfd[1], &x[1], sizeof(int));
 	printf("[child] Wrote %d bytes\n", b);
 
-	exit(0);	
+	exit(0);
     } else { // parent
 	close(pfd[1]);
 	int y[2];
@@ -34,7 +34,7 @@ int main() {
 	waitpid(pid, &status, 0);
 	printf("[parent] Child exited with status %d\n", WEXITSTATUS(status));
     }
-    
+
 
     return 0;
 }
