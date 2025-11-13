@@ -13,11 +13,22 @@ int main() {
     pid_t pid = fork();
 
     if (pid == 0) { // Child
+	close(pfd[0]);
 	// As child process, how to send x via the pipe?
 	int x[2] = {42, 125}; 
 
+	int b = write(pfd[1], &x, sizeof(int));
+	b = write(pfd[1], &x[1], sizeof(int));
+	printf("[child] Wrote %d bytes\n", b);
+
 	exit(0);	
     } else { // parent
+	close(pfd[1]);
+	int y[2];
+
+	// Blocks until some data is available
+	int b_recvd = read(pfd[0], y, 2*sizeof(int));
+	printf("[parent] read %d bytes:  [%d, %d]\n", b_recvd, y[0], y[1]);
 
 	int status;
 	waitpid(pid, &status, 0);

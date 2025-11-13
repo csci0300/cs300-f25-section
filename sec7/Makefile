@@ -6,10 +6,13 @@ all: starter pipes
 pipes: pipes.c
 	$(CC) $(FLAGS) $^ -o $@ -lm
 
-starter: pipes-starter.c
+starter: starter.c
+	$(CC) $(FLAGS) $^ -o $@ -lm
+
+starter-complete: starter-complete.c
 	$(CC) $(FLAGS) $^ -o $@ -lm
 
 clean:
-	rm -f starter pipes
+	rm -f starter starter-complete pipes
 
 .PHONY: all clean
