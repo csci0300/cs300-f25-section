@@ -7,34 +7,55 @@
 #include <unistd.h>
 
 int main() {
-    int pfd[2];
-    pipe(pfd); // create pipe
-    int write_fd = pfd[1];
+  // Create the pipes
+  int pipe_fds[2];
+  pipe(pipe_fds);
 
-    pid_t pid = fork();
+  // Spawn child process
+  pid_t pid = fork();
 
-    if (pid == 0) { // Child
-	int x[2] = {42, 125}; // As child process, how to send x via the pipe?
+  // Child code
+  if (pid == 0) {
+    // Close the read end of pipe (children won't read)
+    close(pipe_fds[0]);
 
+    int grandchild_pids[5];
 
-	// write(fd, void* buf, size)
-	sleep(2); // Wait 2s
-	int b = write(write_fd, &x, sizeof(int));
-	int b = write(write_fd, &x[1], sizeof(int));
-
-	printf("[child] Wrote %d bytes\n", b);
-	exit(0);	
-    } else { // parent
-	int y[2];
-	// Blocks until some data is available
-	int b_recvd = read(pfd[0], y, 2*sizeof(int));
-	printf("[parent] read %d bytes:  %d\n", b_recvd, y);
-	    
-	int status;
-	waitpid(pid, &status, 0);
-	printf("[parent] Child exited with status %d\n", WEXITSTATUS(status));
+    for (int i = 0; i < 5; i++) {
+      grandchild_pids[i] = fork();
+      if (grandchild_pids[i] == 0) {
+        exit(0);
+      }
     }
-    
 
+    // Write the child PIDs
+    for (int i = 0; i < 5; i++) {
+      int gc_pid = grandchild_pids[i];
+      write(pipe_fds[1], &gc_pid, sizeof(pid_t));
+    }
+
+    // This child is done, close the file descriptor and exit
+    close(pipe_fds[1]);
     return 0;
+  }
+
+  // Parent code
+  // Close write end of pipe
+  close(pipe_fds[1]);
+
+  // Keep on reading data until child process has closed write ends
+  // If the pipe is empty and not closed, call will block
+  pid_t curr_pid;
+  while (read(pipe_fds[0], &curr_pid, sizeof(curr_pid))) {
+    printf("Received pid %d.\n", curr_pid);
+  }
+
+  // Wait for child process to terminate
+  int status;
+  wait(&status);
+
+  // Close remaining file descriptors; pipe memory is on stack, so it is
+  // automatically cleaned up
+  close(pipe_fds[0]);
+  return 0;
 }
