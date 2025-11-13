@@ -13,15 +13,15 @@ int main() {
     pid_t pid = fork();
 
     if (pid == 0) { // Child
-	// As child process, how to send x via the pipe?
-	int x[2] = {42, 125};
+        // As child process, how to send x via the pipe?
+        int x[2] = {42, 125};
 
-	exit(0);
+        exit(0);
     } else { // parent
 
-	int status;
-	waitpid(pid, &status, 0);
-	printf("[parent] Child exited with status %d\n", WEXITSTATUS(status));
+        int status;
+        waitpid(pid, &status, 0);
+        printf("[parent] Child exited with status %d\n", WEXITSTATUS(status));
     }
 
 
